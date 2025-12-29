@@ -37,6 +37,10 @@ CC = GetNetWk(R$ResultMatrix[[day]],
               mst,
               cutoff=20)
 
+
+```
+
+```{R}
 # Show top Ligand-receptor pairs
 grid.arrange(CC$tg)
 df = CC$df
