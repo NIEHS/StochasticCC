@@ -42,6 +42,9 @@ grid.arrange(CC$tg)
 df = CC$df
 sa = union(df$from,df$to)
 
+```
+
+```{R}
 # Plot effects on tissue
 
 Graphh(R$Result[[day]],
@@ -55,6 +58,9 @@ Graphh(R$Result[[day]],
        
 )
 
+```
+
+```{R}
 
 #######
 HeatMap(
@@ -67,6 +73,10 @@ HeatMap(
   show.onlySig = FALSE,
   toCell = NULL)
 
+```
+
+
+```{R}
 ########
 
 # NeighXCell_id is the node id
@@ -88,13 +98,15 @@ Centers =  data.frame (R$ax_reduce_META,
   group_by(NeighXCell_id) %>% summarise_all(Mode) %>% ungroup() %>% 
   dplyr::select(-NeighXCell_id)
 
-# Extr
+# Extract
 library(forstringr)
 Centers$Slice_ID_day = Centers$Slice_ID %>%str_extract_part("_D",before = F)%>%str_extract_part("_m",before = T)
 Centers$Slice_ID_day = factor(Centers$Slice_ID_day,levels = c(0,3,9,21))
 Centers$Slice_ID = Centers$Slice_ID %>%str_extract_part("1_",before = F) %>%as.factor()
 
+```
 
+```{R}
 
 plotTree(mst,Centers$Tier3,vertex.size =Ref$nn, 
          main = "",Lab = F,noLegend = F,
@@ -102,16 +114,18 @@ plotTree(mst,Centers$Tier3,vertex.size =Ref$nn,
          edge_color="grey",
          edge_alpha=.1,
          cols = c25)
+```
 
+```{R}
 plotTree(mst,Centers$Slice_ID,vertex.size =Ref$nn, 
          main = "",Lab = F,noLegend = F,
          legend.size = 5,
          edge_color="grey",
          edge_alpha=.1,
          cols = c25)
+```
 
-
-
+```{R}
 ## Sort genes based on their SNR
 
 Significantgene = R$Result[[1]]$SNR[1,] %>% sort(decreasing = T) %>% names
