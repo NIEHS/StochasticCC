@@ -48,92 +48,65 @@ In the following, we demonstrate how the StochasticCC is used to identify dynami
 In the following, we demonstrate how the StochasticCC is used to identify dynamic cell-cell communication
 
 ```{R}
-load("~/Downloads/datExpr.Rdata")
-load("~/Downloads/metaData.Rdata")
-source("~/Downloads/DSFMix-main/EMTVenosa/StochasticOdering/StochatCCGuthub.R")
-
-# Head of metadata
-head(metaData)
-
-# First few rows and column of expression data
-datExpr[1:5,1:5]
-```
-<img width="2688" height="524" alt="image" src="https://github.com/user-attachments/assets/d0521e36-28f7-4437-afb6-5ac2bdec7521" />
-<img width="802" height="304" alt="image" src="https://github.com/user-attachments/assets/ee2a684d-8400-45f2-8ec5-b9fc33bb62b0" />
-
-```{R}
-
-#########
-
 HH = NetworkGet(metaData,datExpr)
 
-### Extract Processed data
-
+# Extract Processed data
 
 datExpr = HH$datExpr_withNeigborhood
 Centers2 = HH$Centers
 ax_reduce_META = HH$ax_reduce_META
-
-```
-
-
-```{R}
-## Convert time to numeric id and estimate network
-
 datExpr$day.harvested = factor(ax_reduce_META$Sample_type,levels = c("Healthy","DSS3", "DSS9", "DSS21"))%>%as.numeric()
-
-########
-
 
 # Estimate network
 set.seed(12345)
 mst = ClusterToTree(Centers = Centers2)
 
-# NeighXCell_id is the node id
 
-# Count number of cells per node
-Ref = data.frame(NeighXCell_id = datExpr$NeighXCell_id) %>% 
-                group_by(NeighXCell_id) %>%
-                summarise(nn=n())
+# Estimate phi for day, say 3
 
-####################
-# Plot nodes according to ther cell types
-####################
+DEGs = FindDEGs(datExpr,
+                mst,
+                day=3 
+               )
 
-Mode <- function(x) {
-  ux <- unique(x)
-  ux[which.max(tabulate(match(x, ux)))]
-}
-Centers =  data.frame (ax_reduce_META,
-                       NeighXCell_id = datExpr$NeighXCell_id ) %>% 
-  group_by(NeighXCell_id) %>% summarise_all(Mode) %>% ungroup() %>% 
-  dplyr::select(-NeighXCell_id)
-
-# Extr
-library(forstringr)
-Centers$Slice_ID_day = Centers$Slice_ID %>%str_extract_part("_D",before = F)%>%str_extract_part("_m",before = T)
-Centers$Slice_ID_day = factor(Centers$Slice_ID_day,levels = c(0,3,9,21))
-Centers$Slice_ID = Centers$Slice_ID %>%str_extract_part("1_",before = F) %>%as.factor()
+# Collect outputs
+Result  = DEGs$Result_Cancer_day
+subdata = DEGs$subdata 
+ctype_day1  =  DEGs$ctype_day1
+LRInData = DEGs$LRInData
+META_subb = DEGs$META_subb
 
 
+# Extract effect
 
-plotTree(mst,Centers$Tier3,vertex.size =Ref$nn, 
-         main = "",Lab = F,noLegend = F,
-         legend.size = 5,
-         edge_color="grey",
-         edge_alpha=.1,
-         cols = c25)
+TreeTemp_data_effect = Teffect(Result,
+                               mst,
+                               subdata,
+                               ctype_day1)
 
-plotTree(mst,Centers$Slice_ID,vertex.size =Ref$nn, 
-         main = "",Lab = F,noLegend = F,
-         legend.size = 5,
-         edge_color="grey",
-         edge_alpha=.1,
-         cols = c25)
+TreeTemp_data_effect = TreeTemp_data_effect$TreeTemp_data_effect
+TreeTemp_data = TreeTemp_data_effect$TreeTemp_data
 
+
+# Get Null distribution of communication scores
+
+AA = getNull(TreeTemp_data_effect,LRInData)
+
+DN = AA$DN
+LR0_effect = AA$LR0_effect
+
+ 
+# Estimate cell-cell communication
+
+CTn = c("Stem cells","Goblet 1", "Colonocytes", "T (Cd4+ Ccr7+)", "Treg","Fibro 1")
+
+BB = ComputeCCS(TreeTemp_data_effect,
+                LRInData,
+                CTn,
+                DN,
+                LR0_effect)
+
+
+ResultMatrix     =     BB$ResultMatrix
+ResultMatrixPval = BB$ResultMatrixPval
 ```
-
-<img width="1542" height="800" alt="image" src="https://github.com/user-attachments/assets/74d9f5df-a73e-4af4-855c-68a0e73a0b39" />
-<img width="1542" height="800" alt="image" src="https://github.com/user-attachments/assets/00a8cdbe-32d1-4d85-a7ad-06f40433dd20" />
-
-
