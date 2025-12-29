@@ -52,7 +52,7 @@ sa = union(df$from,df$to)
 <img width="5234" height="898" alt="Picture2" src="https://github.com/user-attachments/assets/f2f4af6c-3aa0-4e7b-ba58-b3ea34df5f8e" />
 
 ```{R}
-# Plot effects on tissue
+# Plot cell types on tissue
 
 Graphh(R$Result[[day]],
        R$subdata[[day]],
@@ -67,6 +67,25 @@ Graphh(R$Result[[day]],
 
 ```
 <img width="4565" height="1127" alt="Picture3" src="https://github.com/user-attachments/assets/80998ef8-68ba-4d06-95d3-5789663dbc02" />
+
+```{R}
+# Plot effects on tissue
+
+Graphh(R$Result[[day]],
+       R$subdata[[day]],
+       R$META_subb[[day]],
+       mst,
+       tissue =tissue,
+       sa, # Cell types to view
+       #antibody = "Itgb2"
+       antibody = NULL
+       
+)
+
+```
+
+<img width="4358" height="1141" alt="Picture4" src="https://github.com/user-attachments/assets/c05b3837-3417-409a-b834-adaf03d3e770" />
+
 
 ```{R}
 
