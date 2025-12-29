@@ -16,6 +16,7 @@ load("~/Downloads/metaData.Rdata")
 source("~/Downloads/DSFMix-main/EMTVenosa/StochasticOdering/StochatCCGuthub.R")
 ```
 
+## Estimate communication parameters
 ```{R}
 HH = NetworkGet(metaData,datExpr)
 
