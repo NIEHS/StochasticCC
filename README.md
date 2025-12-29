@@ -39,6 +39,8 @@ CC = GetNetWk(R$ResultMatrix[[day]],
 
 
 ```
+<img width="5023" height="1902" alt="Picture1" src="https://github.com/user-attachments/assets/6b1ec824-6bae-4735-821d-79932b55e03d" />
+
 
 ```{R}
 # Show top Ligand-receptor pairs
