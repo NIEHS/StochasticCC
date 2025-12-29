@@ -18,60 +18,8 @@ source("~/Downloads/DSFMix-main/EMTVenosa/StochasticOdering/StochatCCGuthub.R")
 
 ## Estimate communication parameters
 ```{R}
-HH = NetworkGet(metaData,datExpr)
-
-# Extract Processed data
-datExpr = HH$datExpr_withNeigborhood
-Centers2 = HH$Centers
-ax_reduce_META = HH$ax_reduce_META
-datExpr$day.harvested = factor(ax_reduce_META$Sample_type,levels = c("Healthy","DSS3", "DSS9", "DSS21"))%>%as.numeric()
-
-# Estimate network
-set.seed(12345)
-mst = ClusterToTree(Centers = Centers2)
-
-
-# Estimate phi for day, say 3
-DEGs = FindDEGs(datExpr,
-                mst,
-                day=3 
-               )
-
-# Collect outputs
-Result  = DEGs$Result_Cancer_day
-subdata = DEGs$subdata 
-ctype_day1  =  DEGs$ctype_day1
-LRInData = DEGs$LRInData
-META_subb = DEGs$META_subb
-
-
-# Extract effect
-TreeTemp_data_effect = Teffect(Result,
-                               mst,
-                               subdata,
-                               ctype_day1)
-
-TreeTemp_data_effect = TreeTemp_data_effect$TreeTemp_data_effect
-TreeTemp_data = TreeTemp_data_effect$TreeTemp_data
-
-
-# Get the null distribution of communication scores
-AA = getNull(TreeTemp_data_effect,LRInData)
-
-DN = AA$DN
-LR0_effect = AA$LR0_effect
-
- 
-# Estimate cell-cell communication
-CTn = c("Stem cells","Goblet 1", "Colonocytes", "T (Cd4+ Ccr7+)", "Treg","Fibro 1")
-
-BB = ComputeCCS(TreeTemp_data_effect,
-                LRInData,
-                CTn,
-                DN,
-                LR0_effect)
-
-
-ResultMatrix     =     BB$ResultMatrix
-ResultMatrixPval = BB$ResultMatrixPval
+R = StochasticCC(metaData,
+                        datExpr,
+                        day_var ="Sample_type",
+                        CTn = CTn)
 ```
