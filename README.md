@@ -8,6 +8,8 @@ In the following, we demonstrate how the StochasticCC is used to identify dynami
 # Demo (Static communication)
 In the following, we demonstrate how the StochasticCC is used to identify dynamic cell-cell communication
 
+## Load Demo data
+
 ```{R}
 load("~/Downloads/datExpr.Rdata")
 load("~/Downloads/metaData.Rdata")
