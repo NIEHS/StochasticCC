@@ -49,6 +49,7 @@ df = CC$df
 sa = union(df$from,df$to)
 
 ```
+<img width="5234" height="898" alt="Picture2" src="https://github.com/user-attachments/assets/f2f4af6c-3aa0-4e7b-ba58-b3ea34df5f8e" />
 
 ```{R}
 # Plot effects on tissue
