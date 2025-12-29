@@ -48,6 +48,12 @@ In the following, we demonstrate how the StochasticCC is used to identify dynami
 In the following, we demonstrate how the StochasticCC is used to identify dynamic cell-cell communication
 
 ```{R}
+load("~/Downloads/datExpr.Rdata")
+load("~/Downloads/metaData.Rdata")
+source("~/Downloads/DSFMix-main/EMTVenosa/StochasticOdering/StochatCCGuthub.R")
+```
+
+```{R}
 HH = NetworkGet(metaData,datExpr)
 
 # Extract Processed data
