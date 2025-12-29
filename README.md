@@ -25,3 +25,107 @@ R = StochasticCC(metaData,
                 )
 ```
 ## Plot Results
+```{R}
+#########################
+######## Results & Plots 
+#########################
+day=1
+# Plot communication network 
+CC = GetNetWk(R$ResultMatrix[[day]],
+              R$ResultMatrixPval[[day]],
+              R$subdata[[day]],
+              mst,
+              cutoff=20)
+
+# Show top Ligand-receptor pairs
+grid.arrange(CC$tg)
+df = CC$df
+sa = union(df$from,df$to)
+
+# Plot effects on tissue
+
+Graphh(R$Result[[day]],
+       R$subdata[[day]],
+       R$META_subb[[day]],
+       mst,
+       tissue =tissue,
+       sa, # Cell types to view
+       #antibody = "Itgb2"
+       antibody = NULL
+       
+)
+
+
+#######
+HeatMap(
+  ResultMatrix =R$ResultMatrix[[day]],
+  ResultMatrixPval =R$ResultMatrixPval[[day]] ,
+  sa=sa,
+  fontsize_row = 3.5,
+  fontsize_col = 7,
+  zoom=1,
+  show.onlySig = FALSE,
+  toCell = NULL)
+
+########
+
+# NeighXCell_id is the node id
+
+# Count number of cells per node
+Ref = data.frame(NeighXCell_id = R$datExpr$NeighXCell_id) %>% 
+  group_by(NeighXCell_id) %>%
+  summarise(nn=n())
+
+# Plot nodes on the network according to their cell types
+
+
+Mode <- function(x) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+Centers =  data.frame (R$ax_reduce_META,
+                       NeighXCell_id = R$datExpr$NeighXCell_id ) %>% 
+  group_by(NeighXCell_id) %>% summarise_all(Mode) %>% ungroup() %>% 
+  dplyr::select(-NeighXCell_id)
+
+# Extr
+library(forstringr)
+Centers$Slice_ID_day = Centers$Slice_ID %>%str_extract_part("_D",before = F)%>%str_extract_part("_m",before = T)
+Centers$Slice_ID_day = factor(Centers$Slice_ID_day,levels = c(0,3,9,21))
+Centers$Slice_ID = Centers$Slice_ID %>%str_extract_part("1_",before = F) %>%as.factor()
+
+
+
+plotTree(mst,Centers$Tier3,vertex.size =Ref$nn, 
+         main = "",Lab = F,noLegend = F,
+         legend.size = 5,
+         edge_color="grey",
+         edge_alpha=.1,
+         cols = c25)
+
+plotTree(mst,Centers$Slice_ID,vertex.size =Ref$nn, 
+         main = "",Lab = F,noLegend = F,
+         legend.size = 5,
+         edge_color="grey",
+         edge_alpha=.1,
+         cols = c25)
+
+
+
+## Sort genes based on their SNR
+
+Significantgene = R$Result[[1]]$SNR[1,] %>% sort(decreasing = T) %>% names
+ge = R$Result[[1]]$treeEffect[,Significantgene[1]]
+
+#################
+# Plot phi on network
+#################
+
+plotTree(mst,ge,vertex.size =Ref$nn, 
+         main = Significantgene[1],Lab = F,noLegend = F,
+         legend.size = 5,
+         edge_color="grey",
+         edge_alpha=.1,
+         cols = c25)
+
+```
