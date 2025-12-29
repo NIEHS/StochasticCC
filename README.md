@@ -56,3 +56,6 @@ head(metaData)
 
 datExpr[1:5,1:5]
 ```
+<img width="2688" height="524" alt="image" src="https://github.com/user-attachments/assets/d0521e36-28f7-4437-afb6-5ac2bdec7521" />
+<img width="802" height="304" alt="image" src="https://github.com/user-attachments/assets/ee2a684d-8400-45f2-8ec5-b9fc33bb62b0" />
+
