@@ -52,8 +52,10 @@ load("~/Downloads/datExpr.Rdata")
 load("~/Downloads/metaData.Rdata")
 source("~/Downloads/DSFMix-main/EMTVenosa/StochasticOdering/StochatCCGuthub.R")
 
+# Head of metadata
 head(metaData)
 
+# First few rows and column of expression data
 datExpr[1:5,1:5]
 ```
 <img width="2688" height="524" alt="image" src="https://github.com/user-attachments/assets/d0521e36-28f7-4437-afb6-5ac2bdec7521" />
