@@ -21,7 +21,6 @@ source("~/Downloads/DSFMix-main/EMTVenosa/StochasticOdering/StochatCCGuthub.R")
 HH = NetworkGet(metaData,datExpr)
 
 # Extract Processed data
-
 datExpr = HH$datExpr_withNeigborhood
 Centers2 = HH$Centers
 ax_reduce_META = HH$ax_reduce_META
@@ -33,7 +32,6 @@ mst = ClusterToTree(Centers = Centers2)
 
 
 # Estimate phi for day, say 3
-
 DEGs = FindDEGs(datExpr,
                 mst,
                 day=3 
@@ -48,7 +46,6 @@ META_subb = DEGs$META_subb
 
 
 # Extract effect
-
 TreeTemp_data_effect = Teffect(Result,
                                mst,
                                subdata,
@@ -58,8 +55,7 @@ TreeTemp_data_effect = TreeTemp_data_effect$TreeTemp_data_effect
 TreeTemp_data = TreeTemp_data_effect$TreeTemp_data
 
 
-# Get Null distribution of communication scores
-
+# Get the null distribution of communication scores
 AA = getNull(TreeTemp_data_effect,LRInData)
 
 DN = AA$DN
@@ -67,7 +63,6 @@ LR0_effect = AA$LR0_effect
 
  
 # Estimate cell-cell communication
-
 CTn = c("Stem cells","Goblet 1", "Colonocytes", "T (Cd4+ Ccr7+)", "Treg","Fibro 1")
 
 BB = ComputeCCS(TreeTemp_data_effect,
