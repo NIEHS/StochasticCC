@@ -103,7 +103,7 @@ HeatMap(
 ```
 <img width="4491" height="2323" alt="Picture5" src="https://github.com/user-attachments/assets/60c1e84b-f1ce-444d-8656-775764b66d5b" />
 
-
+## Descriptive Plots on Network
 ```{R}
 ########
 
