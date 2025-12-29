@@ -66,6 +66,7 @@ Graphh(R$Result[[day]],
 )
 
 ```
+<img width="4565" height="1127" alt="Picture3" src="https://github.com/user-attachments/assets/80998ef8-68ba-4d06-95d3-5789663dbc02" />
 
 ```{R}
 
