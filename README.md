@@ -19,7 +19,8 @@ source("~/Downloads/DSFMix-main/EMTVenosa/StochasticOdering/StochatCCGuthub.R")
 ## Estimate communication parameters
 ```{R}
 R = StochasticCC(metaData,
-                        datExpr,
-                        day_var ="Sample_type",
-                        CTn = CTn)
+                 datExpr,
+                 day_var ="Sample_type",
+                 CTn = CTn
+                )
 ```
