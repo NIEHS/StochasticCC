@@ -24,3 +24,4 @@ R = StochasticCC(metaData,
                  CTn = CTn
                 )
 ```
+## Plot Results
