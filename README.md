@@ -193,3 +193,48 @@ RRe  = GetDynamicNtwk(Re = R,
                       NoG = 5
 )
 ```
+
+```{R}
+#################
+#### Plot Network 
+##################
+
+OR  = RRe$OR
+df <- data.frame(
+  from = OR[,1],
+  to   =  OR[,3],
+  ligand_receptor = rownames(OR)
+)
+
+# Create graph
+
+g <- graph_from_data_frame(df, directed = TRUE)
+E(g)$width <- 1/as.numeric(OR[,4])#[E(g)$ligand_receptor]
+pairwise_colors <- c(
+  "T1T1" = "#000000",   # Black
+  "T1T2" = "#E69F00",   # Orange
+  "T1T3" = "#56B4E9",   # Sky Blue
+  "T2T1" = "#009E73",   # Bluish Green
+  "T2T2" = "#F0E442",   # Yellow
+  "T2T3" = "#0072B2",   # Blue
+  "T3T1" = "#D55E00",   # Vermillion
+  "T3T2" = "#CC79A7",   # Reddish Purple
+  "T3T3" = "#999999"    # Gray
+)
+
+# Assign colors to edges
+edge_groups <- as.factor(paste0(df$from, df$to))
+E(g)$color <- pairwise_colors[as.character(edge_groups)]
+# Plot with edge labels
+plot(g,
+     edge.label = E(g)$ligand_receptor,  # assign edge labels
+     edge.arrow.size = 0.5,              # arrow size
+     vertex.color = "lightblue",
+     vertex.size = 30,
+     edge.label.cex = 0.9,
+     vertex.label.cex = 1.5)
+
+```
+
+<img width="1688" height="1738" alt="image" src="https://github.com/user-attachments/assets/98a58d81-fa18-4f01-bdcc-9713c4afed08" />
+
