@@ -242,6 +242,7 @@ plot(g,
 ```
 
 <img width="1688" height="1738" alt="image" src="https://github.com/user-attachments/assets/98a58d81-fa18-4f01-bdcc-9713c4afed08" />
+
 Plot simplex for c(1,2,3) and Ligand-recpeptor pair `Adam12^Itga9`
 ```{R}
 # Plot simplex for c(1,2,3) and Ligand-recpeptor pair `Adam12^Itga9`
