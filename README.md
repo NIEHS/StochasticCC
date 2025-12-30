@@ -142,9 +142,7 @@ plotTree(mst,Centers$Tier3,vertex.size =Ref$nn,
          edge_color="grey",
          edge_alpha=.1,
          cols = c25)
-```
 
-```{R}
 plotTree(mst,Centers$Slice_ID,vertex.size =Ref$nn, 
          main = "",Lab = F,noLegend = F,
          legend.size = 5,
@@ -152,6 +150,8 @@ plotTree(mst,Centers$Slice_ID,vertex.size =Ref$nn,
          edge_alpha=.1,
          cols = c25)
 ```
+
+<img width="4624" height="1292" alt="Picture6" src="https://github.com/user-attachments/assets/05ddbc85-b250-4c03-aca0-196e257f828a" />
 
 ```{R}
 ## Sort genes based on their SNR
