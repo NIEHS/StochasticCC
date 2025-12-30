@@ -1,10 +1,6 @@
 # Tracking dynamic cell-cell communication using a stochastic ordering framework for spatially resolved transcriptomics
 Intercellular communication is fundamental to tissue homeostasis and disease progression, yet quantitatively resolving its dynamics across biological systems remains challenging. Although single-cell and spatial transcriptomic technologies now enable high-resolution profiling of cell-cell interactions, most computational approaches provide static summaries that overlook temporal and contextual variability. Here, we introduce StochasticCC, a novel probabilistic framework that models ligand-receptor signaling using full bivariate expression distributions. By leveraging stochastic ordering and Bayesian network modeling, StochasticCC accounts for correlation structure between ligands and receptors, adjusts for spatial and technical variation, and reduces false discoveries in heterogeneous or multi-modal datasets. In simulations, controlled biological studies, and benchmarking against four major communication frameworks, it consistently outperformed mean-based and product scoring methods. Applying StochasticCC to induced ulcerative colitis and tamoxifen-induced lung injury, we identify conserved fibroblast activation programs converging on FAK/Src-centered signaling modules, mediated by distinct ligand-receptor pairs such as Cxcl12-Itga5 and Spp1-Itgav/Itga8. This cross-organ convergence reveals a shared mechanotransduction axis underlying fibrotic remodeling, demonstrating that stochastic communication dynamics encode conserved signaling logic across inflammatory diseases. Collectively,  StochasticCC provides a generalizable framework for uncovering conserved signaling motifs across tissues and disease states.
 
-# Demo (Dynamics of communication)
-In the following, we demonstrate how the StochasticCC is used to identify dynamic cell-cell communication
-
-
 # Demo (Static communication)
 In the following, we demonstrate how the StochasticCC is used to identify dynamic cell-cell communication
 
@@ -170,4 +166,30 @@ plotTree(mst,ge,vertex.size =Ref$nn,
          edge_alpha=.1,
          cols = c25)
 
+```
+
+
+# Demo (Dynamics of communication)
+In the following, we demonstrate how the StochasticCC is used to identify dynamic cell-cell communication
+
+```{R}
+##################
+# Test ordering
+################
+
+Test = list(
+  c(1,2,3), # Time T1 -> T3
+  c(3,2,1), # Time T3 -> T2
+  c(2,1,3) # Time T2  -> T3
+)
+
+RRe  = GetDynamicNtwk(Re = R,
+                      LRInData = LRInData[1:10,],
+                      ctype_from = "Colonocytes",
+                      ctype_to = "Stem cells",
+                      uniq_day = Test,
+                      nCores = 9,
+                      usePvalue =TRUE,
+                      NoG = 5
+)
 ```
