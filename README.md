@@ -212,7 +212,8 @@ df <- data.frame(
 # Create graph
 
 g <- graph_from_data_frame(df, directed = TRUE)
-E(g)$width <- 1/as.numeric(OR[,4])#[E(g)$ligand_receptor]
+E(g)$width <- 1/as.numeric(OR[,4])
+
 pairwise_colors <- c(
   "T1T1" = "#000000",   # Black
   "T1T2" = "#E69F00",   # Orange
@@ -228,6 +229,7 @@ pairwise_colors <- c(
 # Assign colors to edges
 edge_groups <- as.factor(paste0(df$from, df$to))
 E(g)$color <- pairwise_colors[as.character(edge_groups)]
+
 # Plot with edge labels
 plot(g,
      edge.label = E(g)$ligand_receptor,  # assign edge labels
