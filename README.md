@@ -243,3 +243,20 @@ plot(g,
 
 <img width="1688" height="1738" alt="image" src="https://github.com/user-attachments/assets/98a58d81-fa18-4f01-bdcc-9713c4afed08" />
 
+```{R}
+# Plot simplex for c(1,2,3) and Ligand-recpeptor pair `Adam12^Itga9`
+
+hk = paste0("T",c(1,2,3),collapse = "")
+
+df = RRe$Simplex[[hk]]$`Adam12^Itga9`
+
+ggtern(df %>% unique(), aes(x = T1, y = T2, z = T3)) +
+  geom_point(size = 3, color = "blue", alpha = 0.6) +
+  theme_bw() +
+  labs(
+    title = "Simplex Plot of T1, T2, T3",
+    T = "T2", L = "T1", R = "T3"
+  )
+```
+
+<img width="1988" height="1692" alt="image" src="https://github.com/user-attachments/assets/164f48eb-9273-4bd4-90e4-4b28538d449f" />
