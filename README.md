@@ -182,7 +182,9 @@ Test = list(
   c(3,2,1), # Time T3 -> T2
   c(2,1,3) # Time T2  -> T3
 )
-
+```
+### Estimate communication parameters
+```{R}
 RRe  = GetDynamicNtwk(Re = R,
                       LRInData = LRInData[1:10,],
                       ctype_from = "Colonocytes",
@@ -193,6 +195,7 @@ RRe  = GetDynamicNtwk(Re = R,
                       NoG = 5
 )
 ```
+### Plot dynamics 
 
 ```{R}
 #################
