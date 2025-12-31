@@ -14,7 +14,9 @@ library(ggraph)
 library(ar.matrix)
 library(viridis)
 library(forstringr)
-
+library(reshape2)
+library(Iso)
+library(ggtern)
 
 Hcluster <- function(DataTocluster,thresholdGini=0.2,k,ClusterName){
   # Goal: Function to cluster a data using hierarchical clustering
@@ -1938,6 +1940,7 @@ return(list(Centers = Centers2,
 }
 
 FindDEGs <- function(datExpr_withNeigborhood_sub,
+                     ax_reduce_META,
                      mst,
                      day=1
                  ) {
@@ -2125,13 +2128,13 @@ return(list(TreeTemp_data_effect= TreeTemp_data_effect,
       )
 }
 
-getNull  = function(TreeTemp_data_effect,LRInData){
+getNull  = function(Tree_effect,LRInData){
 
-  treeEffect = TreeTemp_data_effect
+  treeEffect = Tree_effect
   uniq_ctype = treeEffect$Ctype %>% unique()
 
-  snr = colnames(TreeTemp_data_effect)[-c(1:6)] # Remove non-genes
-  
+  snr = colnames(treeEffect)[-c(1:6)] # Remove non-genes
+ 
   LRInData = LRInData[LRInData$LiganInMouse %in% snr | LRInData$RecepInMouse %in% snr,]
   
   set.seed(1234)
@@ -2682,4 +2685,400 @@ if (show.onlySig){
   
 }
 
+}
+
+
+
+StochasticCC = function(metaData,
+                        datExpr,
+                        day_var ="Sample_type",
+                        CTn = CTn
+){
+  
+  HH = NetworkGet(metaData,datExpr)
+  
+  # Extract Processed data
+  
+  datExpr = HH$datExpr_withNeigborhood
+  Centers2 = HH$Centers
+  ax_reduce_META = HH$ax_reduce_META
+  datExpr$day.harvested = as.numeric(ax_reduce_META[,day_var])
+  
+  # Estimate network
+  set.seed(12345)
+  mst = ClusterToTree(Centers = Centers2)
+  
+  
+  # Estimate phi for day, say 3
+  ResultMatrix =TreeTemp_data_effect2= ResultMatrixPval=BB=LR0_effect=DN=TreeTemp_data=TreeTemp_data_effect=META_subb=LRInData=ctype_day1=subdata=Result=DEGs=list()
+  
+  for (lk in unique(datExpr$day.harvested )) {
+    
+    DEGs[[lk]] = FindDEGs(datExpr,
+                          ax_reduce_META,
+                          mst,
+                          day=lk 
+    )
+    
+    
+    # Collect outputs
+    Result[[lk]]  = DEGs[[lk]]$Result_Cancer_day
+    subdata[[lk]] = DEGs[[lk]]$subdata 
+    ctype_day1[[lk]]  =  DEGs[[lk]]$ctype_day1
+    LRInData[[lk]] = DEGs[[lk]]$LRInData
+    META_subb[[lk]] = DEGs[[lk]]$META_subb
+    
+    # Extract effect
+    
+    TreeTemp_data_effect = Teffect(Result[[lk]],
+                                   mst,
+                                   subdata[[lk]],
+                                   ctype_day1[[lk]])
+    
+    TreeTemp_data_effect2[[lk]] = TreeTemp_data_effect$TreeTemp_data_effect
+    TreeTemp_data[[lk]] = TreeTemp_data_effect2[[lk]]$TreeTemp_data
+    
+    
+    # Get Null distribution of communication scores
+    
+    AA = getNull(TreeTemp_data_effect2[[lk]],LRInData[[lk]])
+    
+    DN[[lk]] = AA$DN
+    LR0_effect[[lk]] = AA$LR0_effect
+    
+    # Estimate cell-cell communication
+    BB[[lk]] = ComputeCCS(TreeTemp_data_effect2[[lk]],
+                          LRInData[[lk]],
+                          CTn,
+                          DN[[lk]],
+                          LR0_effect[[lk]])
+    
+    
+    ResultMatrix[[lk]]     =     BB[[lk]]$ResultMatrix
+    ResultMatrixPval[[lk]] =     BB[[lk]]$ResultMatrixPval
+    
+  }
+  
+  
+  return(list(datExpr=datExpr,
+              ax_reduce_META= ax_reduce_META,
+              Result = Result,
+              ResultMatrix=ResultMatrix,
+              ResultMatrixPval = ResultMatrixPval,
+              mst=mst,
+              subdata=subdata,
+              META_subb= META_subb,
+              LRInData = LRInData
+              
+  )
+  )
+}
+###################################################
+############### DYNAMIC FUNCTIONS ##################
+####################################################
+
+
+StochasticCCDynm = function(Re= R,
+                            LRInData = NULL,
+                            ctype_from = "Colonocytes",
+                            ctype_to = "Stem cells",
+                            uniq_day = c(1,2,3),
+                            nCores = 9,
+                            usePvalue=TRUE
+){
+  
+  datExpr_withNeigborhood_subdata = Re$datExpr
+  ax_reduce_META_subb = Re$ax_reduce_META
+  
+  ConfoundFrame = data.frame(ax_reduce_META_subb$Slice_ID %>%
+                               as.numeric())
+  
+  if(is.null(LRInData)){
+    LRInData = Re$LRInData[[1]]
+  }
+  
+  
+  TreeEffect = NULL
+  
+  for(day in uniq_day ){
+    treeEffect = Re$Result[[day]]$treeEffect %>% as.data.frame()
+    treeEffect$NeighXCellXclust_id =  unique(as.numeric(as.factor(ax_reduce_META_subb$NeighXCellXclust) )) %>% sort
+    ax_reduce_META_subb$NeighXCellXclust_id = as.numeric(as.factor(ax_reduce_META_subb$NeighXCellXclust))
+    
+    treeEffect = left_join(ax_reduce_META_subb, treeEffect,by="NeighXCellXclust_id")
+    treeEffect$day.harvested = day
+    
+    TreeEffect = rbind(TreeEffect,treeEffect)
+  }
+  
+  datExpr_withNeigborhood_subdata = TreeEffect
+  
+  bivariate_monotonic_test <- function(groups) {
+    k <- length(groups)
+    ns <- sapply(groups, nrow)
+    pooled <- do.call(rbind, groups)
+    
+    # Grid for ECDF
+    x_grid <-  seq(min(sort(unique(pooled[,1]))),max(sort(unique(pooled[,1]))),length=100) # sort(unique(pooled[,1]))
+    y_grid <-  seq(min(sort(unique(pooled[,2]))),max(sort(unique(pooled[,2]))),length=100) #sort(unique(pooled[,2]))
+    
+    m1 <- length(x_grid)
+    m2 <- length(y_grid)
+    
+    # Empirical joint CDFs
+    Fhat_array <- Fhat_array_scale <- array(0, dim = c(k, m1, m2))
+    for(a in 1:m1){
+      for(b in 1:m2){
+        for(i in 1:k){
+          Xi <- groups[[i]]
+          Fhat_array[i,a,b] <- mean(Xi[,1] <= x_grid[a] & Xi[,2] <= y_grid[b])
+        }
+        Fhat_array_scale[,a,b] = (1-Fhat_array[,a,b])/sum(1-Fhat_array[,a,b])
+      }
+    }
+    Simplex =  cbind(expand_grid(b=x_grid, a=y_grid), T1 = as.numeric(Fhat_array_scale[1,,]),
+                     T2 = as.numeric(Fhat_array_scale[2,,]),
+                     T3 = as.numeric(Fhat_array_scale[3,,]))         
+    
+    # Isotonic fit via PAVA
+    Fiso_array <- array(0, dim = c(k, m1, m2))
+    for(a in 1:m1){
+      for(b in 1:m2){
+        Fiso_array[,a,b] <- pava(Fhat_array[,a,b], w = ns)
+      }
+    }
+    
+    # Weights for integration
+    w_matrix <- matrix(1/(m1*m2), nrow = m1, ncol = m2)
+    
+    
+    
+    # Test statistic
+    T_obs <- sum( w_matrix * apply((Fhat_array - Fiso_array)^2, c(2,3), function(z) sum(ns * z)) )
+    
+    # Permutation test
+    T_obs
+    B <- 100
+    Tperm <- numeric(B)
+    group_id <- rep(1:k, times = ns)
+    
+    for(b in 1:B){
+      perm_labels <- sample(group_id)
+      perm_groups <- lapply(1:k, function(i) pooled[perm_labels == i, , drop = FALSE])
+      
+      Fh_perm <- array(0, dim = c(k, m1, m2))
+      for(i in 1:k){
+        Xi <- perm_groups[[i]]
+        for(a in 1:m1){
+          for(bb in 1:m2){
+            Fh_perm[i,a,bb] <- mean(Xi[,1] <= x_grid[a] & Xi[,2] <= y_grid[bb])
+          }
+        }
+      }
+      
+      Fiso_perm <- array(0, dim = c(k, m1, m2))
+      for(a in 1:m1){
+        for(bb in 1:m2){
+          Fiso_perm[,a,bb] <- pava(Fh_perm[,a,bb], w = ns)
+        }
+      }
+      
+      Tperm[b] <- sum(w_matrix * apply((Fh_perm - Fiso_perm)^2, c(2,3), function(z) sum(ns * z)))
+    }
+    
+    pval <- (1 + sum(Tperm <= T_obs)) / (1 + B)
+    list(pval=pval,T_obs =T_obs, Fhat_array=Fhat_array, Simplex=Simplex,Fiso_perm=Fiso_perm)
+  }
+  
+  detected =detectedObs =NULL
+  
+  
+  
+  library(doParallel)
+  nCores = nCores
+  cl <- makeCluster(nCores, outfile="")
+  registerDoParallel(cl)
+  
+  replic = length(LRInData$RecepInMouse)
+  detected = detectedObs = L = R = vector("numeric", replic)
+  P = L=R= matrix(NA,nrow = length(uniq_day), ncol = replic)
+  
+  
+  ko_param <- foreach(I=seq_len(replic),.errorhandling = "pass",
+                      .packages = c("doParallel",
+                                    "Rfast2",
+                                    "tidyverse",
+                                    "Iso"
+                                    
+                      )
+  ) %dopar% {
+    
+    
+    set.seed(12353)
+    
+    if(I%%100==0)cat(I,"\n")
+    mono_data = list()
+    
+    for (day in uniq_day) {
+      
+      id1l = which(datExpr_withNeigborhood_subdata$day.harvested==day & datExpr_withNeigborhood_subdata$Tier3==ctype_from) %>% sample(1500, replace = T)
+      id1r = which(datExpr_withNeigborhood_subdata$day.harvested==day &datExpr_withNeigborhood_subdata$Tier3==ctype_to)%>% sample(1500, replace = T)
+      
+      mono_data[[day]] = cbind(Ligand = abs(datExpr_withNeigborhood_subdata[id1l,LRInData$LiganInMouse[I]]),
+                               Receptor = abs(datExpr_withNeigborhood_subdata[id1r,LRInData$RecepInMouse[I]] ))
+      
+    }
+    
+    pval_mono <- bivariate_monotonic_test(mono_data)
+    
+    detected[I] <- pval_mono$pval
+    detectedObs[I] <- pval_mono$T_obs
+    Fhat_array <- pval_mono$Fhat_array
+    Fiso_perm <- pval_mono$Fiso_perm
+    Simplex = pval_mono$Simplex
+    
+    aL= list()
+    aR= list()
+    
+    for (day in uniq_day) {
+      
+      aL[[day]] = mono_data[[day]][,1,drop=F] %>% colMeans()
+      aR[[day]] = mono_data[[day]][,2,drop=F] %>% colMeans()
+    }
+    
+    L[,I] =  unlist(aL)        #c(a1[1],a2[1],a3[1])
+    R[,I]  = unlist(unlist(aR))# c(a1[2],a2[2],a3[2])
+    
+    aux1 = Fhat_array[,sample(1:dim(Fhat_array)[2],10),sample(1:dim(Fhat_array)[3],1)]
+    aux2 = Fhat_array[,sample(1:dim(Fhat_array)[2],1),sample(1:dim(Fhat_array)[3],10)]
+    
+    ranked_aux1 <- apply(1-aux1, 2, rank)
+    ranked_aux2 <- apply(1-aux2, 2, rank)
+    
+    rownames(ranked_aux1) = c("T1","T2","T3")
+    rownames(ranked_aux2) = c("T1","T2","T3")
+    
+    
+    P[,I] = colMeans(rbind(rowMeans(ranked_aux1),rowMeans(ranked_aux2)))
+    
+    list(
+      detected  =  detected[I],
+      detectedObs   =  detectedObs[I],
+      L =  L[,I],
+      R =  R[,I],
+      P = P[,I],
+      Simplex = Simplex
+    )
+  }
+  
+  Simplex =list()
+  for (i in 1:replic) {
+    if(is.null(ko_param[[i]]$detected)) {Error = ko_param[[i]];next}
+    # Get smoothed/predicted gene expression
+    Error = 0
+    detected[i] = ko_param[[i]]$detected
+    detectedObs[i] = ko_param[[i]]$detectedObs
+    L[,i] = ko_param[[i]]$L
+    R[,i] = ko_param[[i]]$R
+    P[,i] = ko_param[[i]]$P
+    Simplex[[i]] = ko_param[[i]]$Simplex
+  }
+  
+  parallel::stopCluster(cl) 
+  
+  
+  colnames(L) = paste0(LRInData$LiganInMouse,"^",LRInData$RecepInMouse)
+  colnames(R) = paste0(LRInData$LiganInMouse,"^",LRInData$RecepInMouse)
+  colnames(P) = paste0(LRInData$LiganInMouse,"^",LRInData$RecepInMouse)
+  names(Simplex) = paste0(LRInData$LiganInMouse,"^",LRInData$RecepInMouse)
+  
+  rownames(L) = c("T1","T2","T3")
+  rownames(R) = c("T1","T2","T3")
+  rownames(P) = c("T1","T2","T3")
+  
+  
+  names(detected) = paste0(LRInData$LiganInMouse,"^",LRInData$RecepInMouse)
+  names(detectedObs) = paste0(LRInData$LiganInMouse,"^",LRInData$RecepInMouse)
+  
+  return(
+    list(detected = detected,
+         detectedObs = detectedObs,
+         Simplex= Simplex,
+         L = L,
+         R= R,
+         P = P,
+         Dirtn = uniq_day)
+  )
+}
+
+
+
+GetDynamicNtwk = function(Re= Re,
+                          LRInData = NULL,
+                          ctype_from = "Colonocytes",
+                          ctype_to = "Stem cells",
+                          uniq_day = Test,
+                          nCores = 9,
+                          usePvalue =TRUE,
+                          NoG = 5
+){
+  
+  ORR =  NULL
+  Simplex = DetectedObs = Detected =list()
+  
+  for(kl in 1:length(Test) ){
+    
+    R2 = StochasticCCDynm(Re= Re,
+                          LRInData = LRInData,
+                          ctype_from = ctype_from,
+                          ctype_to = ctype_to,
+                          uniq_day = uniq_day[[kl]],
+                          nCores = nCores,
+                          usePvalue=usePvalue
+    )
+    
+    
+    detectedObs = R2$detectedObs
+    detected =  R2$detected
+    Simplex[[paste0("T",uniq_day[[kl]],collapse = "")]] = R2$Simplex
+    
+    NoG = pmin(NoG, length(detected))
+    
+    nam = sort(detectedObs) %>% names() #names(a)
+    
+    if(usePvalue){
+      
+      auX = detected[nam][detected[nam] <0.05]
+      
+      if(length(auX)==0){
+        nam = nam[1:NoG]
+      }else{
+        nam = names(auX)
+      }
+      
+    }else{
+      nam = nam[1:NoG]
+    }
+    
+    
+    
+    OR=NULL
+    for(k in 1:length(nam)){
+      OR = rbind(OR ,order = paste0("T",uniq_day[[kl]]) )
+    }
+    
+    
+    rownames(OR) = nam
+    OR  = cbind(OR,detectedObs[nam])
+    
+    ORR = rbind(ORR,OR)
+    
+  }
+  
+  colnames(ORR) = c("V1","V2","V3","V4")
+  
+  return( list(OR =ORR,
+               Simplex = Simplex)
+  )
+  
 }
