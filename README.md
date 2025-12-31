@@ -9,8 +9,10 @@ In the following, we demonstrate how the StochasticCC is used to identify dynami
 load("~/Downloads/datExpr.Rdata")
 load("~/Downloads/metaData.Rdata")
 source("~/Downloads/DSFMix-main/EMTVenosa/StochasticOdering/StochatCCGuthub.R")
+
 # Convert string to numeric days
 metaData$Sample_type  = factor(metaData$Sample_type,levels = c("Healthy","DSS3", "DSS9", "DSS21"))%>%as.numeric()
+
 # Cell types of interest
 CTn = c("Stem cells", "Goblet 1", "Colonocytes", "T (Cd4+ Ccr7+)", "Treg", "Fibro 1")
 ```
