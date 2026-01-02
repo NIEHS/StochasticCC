@@ -2844,7 +2844,7 @@ StochasticCCDynm = function(Re= R,
     Fiso_array <- array(0, dim = c(k, m1, m2))
     for(a in 1:m1){
       for(b in 1:m2){
-        Fiso_array[,a,b] <- pava(Fhat_array[,a,b], w = ns)
+        Fiso_array[,a,b] <- pava(1-Fhat_array[,a,b], w = ns) # Fhat_array[,a,b] is decreasing across time, however, 1-Fhat_array[,a,b] is increasing
       }
     }
     
