@@ -184,7 +184,7 @@ In the following, we demonstrate how the StochasticCC is used to identify dynami
 
 Test = list(
   c(1,2,3), # Time T1 -> T3
-  c(3,2,1), # Time T3 -> T2
+  c(3,2,1), # Time T3 -> T1
   c(2,1,3) # Time T2  -> T3
 )
 ```
