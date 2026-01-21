@@ -174,7 +174,7 @@ plotTree(mst,ge,vertex.size =Ref$nn,
 ```
 
 
-# Demo (Dynamics of communication)
+# Demo (Dynamic cell-cell communication)
 In the following, we demonstrate how the StochasticCC is used to identify dynamic cell-cell communication
 
 ```{R}
