@@ -1,6 +1,6 @@
 # Tracking dynamic cell-cell communication using a stochastic ordering framework for spatially resolved transcriptomics
 We introduce StochasticCC, a probabilistic framework that models ligand-receptor cell-cell signaling using full bivariate distributions of expression. The framework accounts for the correlation structure between ligands and receptors and adjusts for spatial and technical variations in spatial transcriptomics/sc-RNA seq datasets. In this page, we demonstrate how to use the framework to analyze a MERFISH spatial transcriptomics dataset from a mouse model that involved the developmental stages of Ulcerative Colitis.
-# Demo (Static communication)
+# Demo (Static communication using a two-sample stochastic ordering)
 In the following, we demonstrate how the StochasticCC is used to identify cell-cell communication
 
 ## Load Demo data
